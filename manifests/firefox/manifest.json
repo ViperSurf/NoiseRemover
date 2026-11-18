@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Static, Hiss, Wind & Fan Noise Remover",
+  "version": "1.0.0",
+  "description": "Real-time <10ms static, hiss, fan drone, and wind remover for tab audio. 100% local & air-gapped.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "background": {
+    "scripts": ["dist/background/audio-router.js"],
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "dist/popup/popup.html",
+    "default_title": "Noise Remover (Alt+Shift+N)"
+  },
+  "commands": {
+    "toggle-noise-filter": {
+      "suggested_key": {
+        "default": "Alt+Shift+N"
+      },
+      "description": "Toggle noise filtering on the active tab"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "noise-remover@local.audio",
+      "strict_min_version": "115.0"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["dist/dsp/noise-remover-processor.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none';"
+  }
+}
