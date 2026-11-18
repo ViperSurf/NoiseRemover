@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Noise Remover — Offscreen Audio Engine</title>
+</head>
+<body>
+  <!-- Chromium-only host document: owns every captured tab's Web Audio
+       graph (one offscreen document per extension, graphs multiplexed by
+       tabId inside offscreen-engine.ts). Never visible to the user. -->
+  <script type="module" src="offscreen-engine.js"></script>
+</body>
+</html>
