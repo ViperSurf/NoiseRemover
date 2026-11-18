@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noise Remover</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="card" id="appRoot">
+    <!-- 1. Header Bar: Master Toggle, Hold A/B, Padlock -->
+    <header class="header-bar">
+      <div class="master-toggle-group">
+        <button id="masterToggleBtn" class="switch-btn" role="switch" aria-checked="false">
+          <span class="status-dot"></span>
+          <span id="masterToggleLabel">Noise Filter: OFF</span>
+        </button>
+        <span class="tooltip-trigger" tabindex="0" data-tooltip="masterSwitch" aria-label="Help">(?)</span>
+      </div>
+
+      <div class="header-actions">
+        <div class="control-with-help">
+          <button id="holdBypassBtn" class="pill-btn secondary-btn" disabled>Hold: Hear Original</button>
+          <span class="tooltip-trigger" tabindex="0" data-tooltip="holdOriginal">(?)</span>
+        </div>
+        <div class="control-with-help">
+          <button id="lockControlsBtn" class="icon-btn" aria-pressed="false" title="Lock Controls">
+            <span id="lockIcon">🔓</span>
+          </button>
+          <span class="tooltip-trigger" tabindex="0" data-tooltip="lockControls">(?)</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. Independent Per-Tab Audio Strip -->
+    <section class="section-strip" aria-label="Active Audio Tabs">
+      <div class="section-header">
+        <span class="section-label">Active Audio Tabs</span>
+        <span class="tooltip-trigger" tabindex="0" data-tooltip="activeTabsStrip">(?)</span>
+      </div>
+      <div id="activeTabsContainer" class="tabs-pill-strip"></div>
+    </section>
+
+    <!-- Lockable Controls Container -->
+    <div id="lockableArea" class="lockable-area">
+      <!-- 3. 4 One-Click Noise Presets -->
+      <section class="presets-section">
+        <div class="presets-grid">
+          <div class="preset-cell">
+            <button class="preset-btn active" data-preset="mic_hiss">Mic Hiss</button>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="presetMicHiss">(?)</span>
+          </div>
+          <div class="preset-cell">
+            <button class="preset-btn" data-preset="fan_ac">Fan &amp; AC</button>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="presetFanAc">(?)</span>
+          </div>
+          <div class="preset-cell">
+            <button class="preset-btn" data-preset="wind_rumble">Wind &amp; Rumble</button>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="presetWindRumble">(?)</span>
+          </div>
+          <div class="preset-cell">
+            <button class="preset-btn" data-preset="voice_focus">Voice Focus</button>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="presetVoiceFocus">(?)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Utility Bar: Auto-Tune (2s), Reset, & Mono Merge -->
+      <section class="utility-bar">
+        <div class="control-with-help">
+          <button id="autoTuneBtn" class="pill-btn accent-btn">Auto-Tune (2s)</button>
+          <span class="tooltip-trigger" tabindex="0" data-tooltip="autoTune">(?)</span>
+        </div>
+        <div class="control-with-help">
+          <button id="resetDefaultBtn" class="pill-btn subtle-btn">Reset</button>
+          <span class="tooltip-trigger" tabindex="0" data-tooltip="autoTuneReset">(?)</span>
+        </div>
+        <div class="control-with-help mono-wrap">
+          <button id="monoToggleBtn" class="pill-btn toggle-pill" aria-pressed="false">Mono (Both Ears)</button>
+          <span class="tooltip-trigger" tabindex="0" data-tooltip="monoToggle">(?)</span>
+        </div>
+      </section>
+
+      <!-- 5. 3 Essential Precision Sliders -->
+      <section class="sliders-section">
+        <div class="slider-row">
+          <div class="slider-label-line">
+            <label for="sliderStaticHiss">Static &amp; Hiss Cut</label>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="sliderStaticHiss">(?)</span>
+            <output id="valStaticHiss" class="slider-val">65%</output>
+          </div>
+          <input type="range" id="sliderStaticHiss" min="0" max="100" step="1" value="65" data-default="65" />
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label-line">
+            <label for="sliderWindFanHum">Wind, Fan &amp; Hum Cut</label>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="sliderWindFanHum">(?)</span>
+            <output id="valWindFanHum" class="slider-val">25%</output>
+          </div>
+          <input type="range" id="sliderWindFanHum" min="0" max="100" step="1" value="25" data-default="25" />
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label-line">
+            <label for="sliderVoiceBoost">Clean Voice Boost</label>
+            <span class="tooltip-trigger" tabindex="0" data-tooltip="sliderVoiceBoost">(?)</span>
+            <output id="valVoiceBoost" class="slider-val">115%</output>
+          </div>
+          <input type="range" id="sliderVoiceBoost" min="100" max="250" step="1" value="115" data-default="115" />
+        </div>
+      </section>
+    </div>
+
+    <!-- 6. Live 60fps <canvas> Noise Reduction Meter -->
+    <section class="meter-section">
+      <div class="meter-header">
+        <span>Noise Removed (Live)</span>
+        <span class="tooltip-trigger" tabindex="0" data-tooltip="reductionMeter">(?)</span>
+        <span id="meterStatusText" class="meter-readout">0.0 dB</span>
+      </div>
+      <canvas id="reductionCanvas" width="302" height="24"></canvas>
+    </section>
+
+    <!-- 7. Two-Tier Smart Confirmation / 5-Second Undo Inline Strip -->
+    <div id="inlineFeedbackBar" class="feedback-bar hidden" role="status" aria-live="polite">
+      <span id="feedbackMessage">Action applied.</span>
+      <div class="feedback-actions">
+        <button id="feedbackPrimaryBtn" class="inline-action-btn">Undo (5s)</button>
+        <button id="feedbackCancelBtn" class="inline-action-btn hidden">Cancel</button>
+      </div>
+    </div>
+
+    <!-- 8. Air-Gapped Site Persistence Footer -->
+    <footer class="footer-bar">
+      <div class="site-status">
+        <span id="siteSavedText">Saved for this site</span>
+        <span class="tooltip-trigger" tabindex="0" data-tooltip="sitePersistence">(?)</span>
+        <span>•</span>
+        <button id="resetSiteBtn" class="link-btn">Reset Site</button>
+      </div>
+      <div class="footer-right">
+        <button id="exportBtn" class="link-btn">Export</button>
+        <span>/</span>
+        <button id="importBtn" class="link-btn">Import</button>
+        <span class="tooltip-trigger" tabindex="0" data-tooltip="exportImport">(?)</span>
+        <span>•</span>
+        <button id="clearAllSitesBtn" class="link-btn danger-link">Clear All</button>
+        <span class="tooltip-trigger" tabindex="0" data-tooltip="clearAllSites">(?)</span>
+        <input type="file" id="importFileInput" accept="application/json" class="hidden" />
+      </div>
+    </footer>
+
+    <!-- Floating Plain-English Tooltip Bubble -->
+    <div id="tooltipPopover" class="tooltip-popover hidden" role="tooltip"></div>
+  </main>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
