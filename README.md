@@ -52,7 +52,26 @@ Permissions are minimal by design: `activeTab`, `storage`, and (Chromium
 only) `tabCapture` + `offscreen`; Firefox adds `scripting` for the injection.
 No `<all_urls>` host access, no history, no web requests.
 
-## Install (unpacked)
+## Download & run (no build needed)
+
+Grab a ready-made package from
+[Releases](https://github.com/ViperSurf/NoiseRemover/releases/latest):
+
+- **Chrome / Edge / Brave / Opera** — download `noise-remover-chrome-v1.0.0.zip`,
+  unzip it, open `chrome://extensions`, turn on **Developer mode**, click
+  **Load unpacked**, and select the unzipped folder (the one containing
+  `manifest.json`). Pin the icon, open any tab with audio, and flip the
+  switch in the popup (or press `Alt+Shift+N`).
+- **Firefox** — download `noise-remover-firefox-v1.0.0.xpi` (or the `.zip`),
+  open `about:debugging` → **This Firefox** → **Load Temporary Add-on**, and
+  select the downloaded file. Temporary add-ons last until Firefox restarts;
+  for a permanent install, build from source below or sign the package
+  through Mozilla Add-ons.
+
+Then play a video or lecture, click the extension icon, pick a preset
+(Mic Hiss is the default), and use **Hold: Hear Original** to compare.
+
+## Install from source (unpacked)
 
 ```bash
 npm install     # dev tooling only — the extension itself has zero runtime dependencies

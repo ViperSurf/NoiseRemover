@@ -4,3 +4,4 @@ dist/
 tests/.tmp/
 *.zip
 .DS_Store
+release/
